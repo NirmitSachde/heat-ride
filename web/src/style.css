@@ -8,7 +8,8 @@
   --plant: #6ee7b7;
   --hot: #f9c74f;
   --line: rgba(232, 230, 227, 0.14);
-  --card: rgba(14, 17, 22, 0.9);
+  --card: rgba(14, 17, 22, 0.95);
+  --card-solid: rgba(14, 17, 22, 0.97);
   --serif: "Fraunces", Georgia, serif;
   --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
@@ -59,11 +60,13 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 .ribbon-canvas canvas { display: block; }
 .ribbon-labels { position: relative; height: 34px; margin: 0 40px; }
 .ribbon-labels span {
+  opacity: 0; transition: opacity 300ms var(--ease);
   position: absolute; top: 0; transform: translateX(-50%);
   display: flex; flex-direction: column; align-items: center;
   font: 400 12px/1.3 var(--mono); color: var(--text); white-space: nowrap;
 }
 .ribbon-labels b { font-weight: 400; }
+.ribbon-labels span.on { opacity: 1; }
 .ribbon-labels span.first { align-items: flex-start; transform: translateX(-20%); }
 .ribbon-labels span.last { align-items: flex-end; transform: translateX(-80%); }
 .ribbon-labels i { font-style: normal; color: var(--muted); font-size: 11px; }
@@ -75,7 +78,7 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 }
 
 .mock-badge {
-  position: fixed; top: 10px; left: 10px; z-index: 60;
+  position: fixed; bottom: 10px; left: 10px; z-index: 60;
   font: 400 11px/1 var(--mono); letter-spacing: 0.04em; color: var(--hot);
   background: rgba(14, 17, 22, 0.85); border: 1px solid rgba(249, 199, 79, 0.5);
   padding: 6px 8px; border-radius: 4px; pointer-events: none;
@@ -231,15 +234,35 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 
 /* legend */
 .legend {
-  position: absolute; right: 24px; bottom: 22px; z-index: 1; width: 230px;
+  position: absolute; left: 24px; top: 24px; z-index: 1; width: 260px;
   opacity: 0; visibility: hidden; font: 400 11px/1.3 var(--mono); color: var(--muted);
-  background: rgba(14, 17, 22, 0.75); padding: 8px 10px; border-radius: 8px;
+  background: rgba(14, 17, 22, 0.88); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
 }
-.stage[data-layout="explore"] .legend { bottom: 96px; right: 12px; }
 .stage.show-legend .legend { opacity: 1; visibility: visible; transition-delay: 0s; }
 .legend-label { display: block; margin-bottom: 5px; color: var(--text); }
 .legend-bar { display: block; height: 8px; border-radius: 2px; }
 .legend-ticks { display: flex; justify-content: space-between; margin-top: 3px; }
+.legend-note { display: block; margin-top: 6px; font: 400 11px/1.35 var(--sans); color: var(--muted); }
+.legend-note .note-short { display: none; }
+
+/* intro: the story text waits for the ribbon, then a small scroll cue */
+.intro .steps { opacity: 0; }
+.steps { transition: opacity var(--dur) var(--ease); }
+.scroll-cue {
+  position: absolute; left: 50%; bottom: 18px; z-index: 2; transform: translateX(-50%);
+  display: none; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px;
+  background: rgba(14, 17, 22, 0.85); border: 1px solid var(--line);
+  font: 400 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text);
+  animation: cue-bob 1.8s var(--ease) infinite; pointer-events: none;
+}
+.stage[data-chapter="hook"] .scroll-cue { display: flex; }
+.intro .scroll-cue, .cue-off .scroll-cue { display: none !important; }
+@keyframes cue-bob { 50% { translate: 0 4px; } }
+@keyframes dock-a { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dock-b { from { opacity: 0; } to { opacity: 1; } }
+
+.explore-key { margin: 6px 0 0; text-align: center; font: 400 12px/1.3 var(--sans); color: var(--text); text-shadow: 0 1px 3px #000; }
+.ring-sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 1.6px solid #fff; background: #e1534a; margin-right: 6px; vertical-align: -1px; }
 
 /* map chrome */
 .maplibregl-ctrl-attrib { font: 400 11px var(--sans); }
@@ -252,9 +275,10 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 .stage-map .maplibregl-ctrl-bottom-right { margin-bottom: 8px; }
 
 /* ------------------------------------------------------------ slider */
-.tri { container-type: inline-size; --a: 0; --b: 0; --m0: 0; --m1: 0; --m2: 1; }
-.tri-frame { position: absolute; inset: 0; overflow: hidden; background: #05070a; touch-action: pan-y; }
-.tri-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; user-select: none; }
+.tri { container-type: inline-size; --a: 0; --b: 0; --m0: 0; --m1: 0; --m2: 1; --knob-y: 62%; }
+.tri-frame { position: absolute; inset: 0; overflow: hidden; background: #05070a; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.tri:not(.no-handles) .tri-frame { cursor: ew-resize; }
+.tri-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 .tri-img[hidden] { display: none; }
 .tri-n { clip-path: inset(0 0 0 calc(var(--a) * 100%)); }
 .tri-t { clip-path: inset(0 0 0 calc(var(--b) * 100%)); }
@@ -263,47 +287,57 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
   transform: translateX(calc(var(--a) * 100cqw)); pointer-events: none;
 }
 .tri-edge-b { transform: translateX(calc(var(--b) * 100cqw)); }
-.tri-edge::after {
-  content: ""; position: absolute; left: 50%; bottom: 40px; width: 30px; height: 30px; margin-left: -15px;
-  border-radius: 50%; background: var(--text); border: 3px solid var(--ink);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+/* knobs: 48 px targets, kept fully inside the picture even at the very edges */
+.tri-knob {
+  position: absolute; left: -24px; top: calc(var(--knob-y) - 24px); width: 48px; height: 48px; border-radius: 50%;
+  transform: translateX(clamp(28px, calc(var(--a) * 100cqw), calc(100cqw - 28px)));
+  display: grid; place-items: center; cursor: ew-resize; touch-action: none;
 }
-.tri-edge-a::after { background: var(--plant); }
-.tri-edge-b::after { background: var(--hot); }
-.tri:has(.tri-in-a:focus-visible) .tri-edge-a::after,
-.tri:has(.tri-in-b:focus-visible) .tri-edge-b::after { outline: 3px solid var(--text); outline-offset: 2px; }
-.tri-labels { position: absolute; left: 0; right: 0; bottom: 84px; height: 24px; pointer-events: none; }
+.tri-knob-b { transform: translateX(clamp(28px, calc(var(--b) * 100cqw), calc(100cqw - 28px))); }
+.tri-knob::before {
+  content: ""; width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--ink);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+  background: var(--plant) center / 18px 18px no-repeat;
+}
+.tri-knob-b::before { background-color: var(--hot); }
+/* a small left-right arrow on each knob */
+.tri-knob::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M6 4 1 9l5 5M12 4l5 5-5 5' fill='none' stroke='%230E1116' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+.tri-knob:focus { outline: none; }
+.tri-knob:focus-visible::before, .tri.dragging .tri-knob:focus::before { outline: 3px solid var(--text); outline-offset: 3px; }
+.tri-labels { position: absolute; left: 0; right: 0; top: calc(var(--knob-y) - 64px); height: 24px; pointer-events: none; }
 .tri-l {
   position: absolute; left: 0; bottom: 0; white-space: nowrap;
   font: 400 12px/1 var(--mono); letter-spacing: 0.04em; text-transform: uppercase;
-  padding: 6px 8px; border-radius: 4px; background: rgba(14, 17, 22, 0.8); color: var(--text);
+  padding: 6px 8px; border-radius: 4px; background: rgba(14, 17, 22, 0.85); color: var(--text);
   transition: opacity 200ms linear;
 }
 .tri-l0 { transform: translateX(calc(var(--m0) * 100cqw - 50%)); }
 .tri-l1 { transform: translateX(calc(var(--m1) * 100cqw - 50%)); color: var(--plant); }
 .tri-l2 { transform: translateX(calc(var(--m2) * 100cqw - 50%)); color: var(--hot); }
 .tri-l.off { opacity: 0; }
-.tri-ctl { position: absolute; left: 0; right: 0; bottom: 33px; height: 44px; }
-.tri-in {
-  position: absolute; inset: 0; width: 100%; height: 44px; margin: 0; padding: 0;
-  -webkit-appearance: none; appearance: none; background: none; pointer-events: none;
+.tri-caption {
+  position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); margin: 0;
+  max-width: min(560px, calc(100% - 32px)); width: max-content;
+  padding: 8px 12px; border-radius: 8px; background: rgba(14, 17, 22, 0.9);
+  font: 400 14px/1.4 var(--sans); color: var(--text); text-align: center; pointer-events: none;
 }
-.tri-in::-webkit-slider-runnable-track { height: 44px; background: none; }
-.tri-in::-moz-range-track { height: 44px; background: none; }
-.tri-in::-webkit-slider-thumb {
-  -webkit-appearance: none; appearance: none; pointer-events: auto;
-  width: 44px; height: 44px; border-radius: 50%; background: transparent; border: 0; cursor: ew-resize;
+.tri-caption:empty { display: none; }
+.tri-hint {
+  position: absolute; left: 0; top: calc(var(--knob-y) + 30px); margin: 0; pointer-events: none;
+  transform: translateX(clamp(8px, calc(var(--b) * 100cqw - 60px), calc(100cqw - 128px)));
+  font: 600 13px/1 var(--sans); color: var(--ink); background: var(--hot); padding: 7px 10px; border-radius: 999px;
+  animation: tri-nudge 1.6s var(--ease) infinite;
 }
-.tri-in::-moz-range-thumb { pointer-events: auto; width: 44px; height: 44px; border-radius: 50%; background: transparent; border: 0; cursor: ew-resize; }
-.tri-in-b { z-index: 2; }
-.tri.a-top .tri-in-a { z-index: 3; }
-.tri.no-handles .tri-edge, .tri.no-handles .tri-ctl, .tri.no-handles .tri-labels { display: none; }
+@keyframes tri-nudge { 50% { translate: 6px 0; } }
+.tri.hint-off .tri-hint { display: none; }
+.tri.no-handles .tri-edge, .tri.no-handles .tri-knob, .tri.no-handles .tri-labels,
+.tri.no-handles .tri-caption, .tri.no-handles .tri-hint { display: none; }
 .tri-note { position: absolute; left: 8px; bottom: 8px; margin: 0; font: 400 11px var(--mono); color: var(--muted); background: rgba(14, 17, 22, 0.8); padding: 4px 6px; border-radius: 4px; }
-.tri-compact { position: relative; aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; }
-.tri-compact .tri-edge::after { bottom: 14px; width: 26px; height: 26px; margin-left: -13px; }
-.tri-compact .tri-ctl { bottom: 5px; }
-.tri-compact .tri-labels { bottom: 50px; }
+.tri-compact { position: relative; aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; --knob-y: 55%; }
+.tri-compact .tri-caption { font-size: 12px; bottom: 8px; padding: 5px 8px; }
+.tri-compact .tri-labels { top: calc(var(--knob-y) - 52px); }
 .tri-compact .tri-l { font-size: 10px; padding: 4px 6px; }
+.tri-compact .tri-hint { top: calc(var(--knob-y) + 28px); font-size: 11px; }
 
 /* ------------------------------------------------------------ steps and cards */
 .steps {
@@ -330,7 +364,7 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 .card code { font: 400 0.9em var(--mono); }
 
 .step.hook-first { align-items: flex-end; padding-bottom: 14vh; }
-.step.hook-first .card { background: linear-gradient(180deg, rgba(14, 17, 22, 0.55), rgba(14, 17, 22, 0.92)); width: 520px; }
+.step.hook-first .card { background: linear-gradient(180deg, rgba(14, 17, 22, 0.82), rgba(14, 17, 22, 0.96)); width: 520px; }
 .step.hook-first .card-title { font-size: 46px; font-weight: 400; font-style: italic; }
 .step-hook:not(.hook-first) .card { width: 560px; }
 .step-hook:not(.hook-first) .card-title { font-size: 34px; line-height: 1.2; }
@@ -351,7 +385,8 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 
 /* ------------------------------------------------------------ autoplay (video) */
 .autoplay .chrome, .autoplay .ribbon-skip, .autoplay .skip-link, .autoplay .maplibregl-ctrl-bottom-right,
-.autoplay .explore-ui, .autoplay .detail, .autoplay .tri-ctl { display: none !important; }
+.autoplay .explore-ui, .autoplay .detail, .autoplay .tri-knob, .autoplay .tri-hint,
+.autoplay .tri-caption, .autoplay .scroll-cue { display: none !important; }
 .autoplay .chart-svg { cursor: none; }
 
 /* ------------------------------------------------------------ mid widths */
@@ -361,6 +396,51 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
   .panel-multiples { top: 6vh; bottom: 6vh; }
 }
 
+/* ------------------------------------------------------------ compact: phones and portrait tablets
+   Panels stack at the bottom of the sticky graphic. In chapters with a panel, the step text is
+   shown in a fixed dock instead of in the scrolling cards, so text and charts never overlap. */
+.dock { display: none; }
+@media (max-width: 900px) {
+  .step.dockable .card { opacity: 0 !important; pointer-events: none; }
+  .stage.docked .dock {
+    display: block; position: absolute; left: 8px; right: 8px; z-index: 3; pointer-events: none;
+    background: var(--card-solid); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px;
+    font-size: 14px; line-height: 1.45; animation: dock-a 400ms var(--ease);
+  }
+  .stage.docked .dock.flip { animation-name: dock-b; }
+  .dock .kicker { margin-bottom: 4px; font-size: 11px; }
+  .dock .card-title { font-size: 19px; margin-bottom: 6px; }
+  .dock .card-note { font-size: 12px; margin-top: 8px; padding-top: 8px; }
+  .stage.docked[data-layout="split"] .dock { bottom: calc(54% + 16px); }
+  .stage.docked[data-layout="list"] .dock { bottom: calc(42% + 16px); }
+  .stage.docked[data-layout="chart"] .dock { bottom: 12px; }
+  .stage.docked[data-layout="explore"] .dock { bottom: 12px; }
+  .detail-open .stage.docked .dock { display: none; }
+
+  .panel-scatter { left: 8px; right: 8px; width: auto; top: auto; bottom: 8px; height: 54%; padding: 6px; }
+  .panel-multiples { left: 12px; right: 12px; top: 52px; bottom: calc(var(--vh) * 0.36); }
+  .multiples { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; }
+  .panel-trees { left: 12px; right: 12px; width: auto; top: 56px; }
+  .panel-list { left: 8px; right: 8px; width: auto; top: auto; bottom: 8px; height: 42%; max-height: none; padding: 12px 12px 6px; }
+  .panel-list .panel-title { font-size: 17px; }
+
+  .explore-ui { top: 46px; left: 8px; right: 8px; transform: translateY(-8px); }
+  .stage[data-layout="explore"] .explore-ui { transform: none; }
+  .switcher { overflow-x: auto; scrollbar-width: none; }
+  .switcher button { padding: 4px 10px; font-size: 13px; flex: 1 0 auto; }
+  .explore-key { text-align: left; }
+  .detail { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; max-height: 72%; }
+  .legend, .stage[data-layout="explore"] .legend { left: auto; right: 8px; bottom: auto; top: 46px; width: 200px; padding: 6px 8px; }
+  .stage[data-layout="explore"] .legend { top: 136px; }
+  .legend-note { font-size: 10px; }
+  .legend-note .note-long { display: none; }
+  .legend-note .note-short { display: inline; }
+  /* the chart and the list carry their own numbers; on small screens the map legend would cover them */
+  .stage[data-layout="split"] .legend, .stage[data-layout="list"] .legend { display: none; }
+  .tip { width: 170px; }
+  .tip:has(.hero) { width: 240px; }
+}
+
 /* ------------------------------------------------------------ phone */
 @media (max-width: 720px) {
   :root { --card-left: 16px; --card-w: 100%; }
@@ -368,67 +448,33 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
   .step { padding: 0 16px; align-items: flex-start; padding-top: 14vh; }
   .card { width: 100%; padding: 16px 16px; }
   .card-title { font-size: 24px; }
-  .step.hook-first { padding-top: 0; padding-bottom: 10vh; align-items: flex-end; }
+  .step.hook-first { padding-top: 0; padding-bottom: 12vh; align-items: flex-end; }
   .step.hook-first .card { width: 100%; }
   .step.hook-first .card-title { font-size: 34px; }
   .step-hook:not(.hook-first) .card { width: 100%; }
   .step-hook:not(.hook-first) .card-title { font-size: 26px; }
   .step-beyond { align-items: flex-start; padding-top: 10vh; }
-  .step-question, .step-sowhat { padding-top: 8vh; }
-  .step.tall { padding-top: 12vh; }
-
-  .panel-scatter { left: 8px; right: 8px; width: auto; top: auto; bottom: 8px; height: 54%; padding: 6px; }
-  .panel-multiples { left: 12px; right: 12px; top: 56px; bottom: 12px; }
-  .multiples { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; }
-  .mult-name { font-size: 17px; }
-  .mult-words { font-size: 12px; min-height: 0; }
-  .mult-score { font-size: 10px; margin-bottom: 4px; }
-  .mult-plot { min-height: 90px; }
-  .panel-trees { left: 12px; right: 12px; width: auto; top: auto; bottom: 16px; }
+  .mult-name { font-size: 16px; }
+  .mult-kind { font-size: 10px; }
+  .mult-words { font-size: 12px; line-height: 1.35; margin: 3px 0 4px; min-height: 0; }
+  .mult-score { display: none; }
+  .mult-plot { min-height: 80px; }
   .bar-row { grid-template-columns: 8.5em 1fr 3em; font-size: 13px; }
-  .panel-list { left: 8px; right: 8px; width: auto; top: auto; bottom: 8px; max-height: 42%; padding: 12px 12px 6px; }
-  .panel-list .panel-title { font-size: 17px; }
-
-  .explore-ui { top: 44px; left: 8px; right: 8px; transform: translateY(-8px); }
-  .stage[data-layout="explore"] .explore-ui { transform: none; }
-  .switcher { overflow-x: auto; scrollbar-width: none; }
-  .switcher button { padding: 4px 10px; font-size: 13px; flex: 1 0 auto; }
-  .detail { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; max-height: 70%; }
-  .legend { left: auto; right: 8px; bottom: auto; top: 44px; width: 180px; padding: 6px 8px; }
-  .stage[data-layout="split"] .legend, .stage[data-layout="list"] .legend { top: 44px; }
-  .stage[data-layout="explore"] .legend { top: auto; bottom: 8px; left: 8px; right: auto; }
-  .tri-labels { bottom: 78px; }
-  .tri-l { font-size: 10px; }
   .ribbon-canvas { height: 30vh; }
-  .ribbon-labels { margin: 0 16px; height: 44px; }
+  .ribbon-labels { height: 44px; }
   .ribbon-labels span { font-size: 10px; }
   .ribbon-labels span:nth-child(even) { top: 20px; }
   .how h2 { font-size: 30px; }
-  .tip { width: 170px; }
-  .tip:has(.hero) { width: 240px; }
 }
-
-/* ------------------------------------------------------------ four places on phones and tablets
-   The small multiples own the top of the sticky graphic; the step card is pinned to the bottom
-   (position: sticky inside its step), so the two never overlap while a step is active. */
-@media (max-width: 900px) {
-  .panel-multiples { left: 12px; right: 12px; top: 52px; bottom: calc(var(--vh) * 0.37); }
-  .multiples { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; }
-  .step.step-places { align-items: flex-end; padding: 0 16px 12px; }
-  .step.step-places:not(.active) .card { opacity: 0; pointer-events: none; }
-  .step.step-places .card { position: sticky; bottom: 12px; width: 100%; max-width: 640px; max-height: calc(var(--vh) * 0.37 - 24px); overflow: auto; }
-}
-@media (max-width: 720px) {
-  .mult-name { font-size: 16px; }
-  .mult-kind { font-size: 10px; }
-  .mult-words { font-size: 12px; line-height: 1.35; margin: 3px 0 4px; }
-  .mult-score { display: none; }
-  .mult-plot { min-height: 80px; }
-  .step.step-places .card { padding: 14px 16px; font-size: 15px; }
-  .step.step-places .card-title { font-size: 21px; }
+@media (max-width: 599px) {
+  .ribbon-labels { margin: 0 16px; } /* same margin as the ribbon strokes (sketch.js) */
 }
 
 /* ------------------------------------------------------------ reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
 }
+
+/* usability retest fixes: visible focus on map controls; the ranked list carries its own numbers, so hide the map legend there at every width */
+summary:focus-visible, .maplibregl-ctrl button:focus-visible, .maplibregl-ctrl-attrib a:focus-visible { outline: 2px solid var(--hot); outline-offset: 2px; }
+.stage[data-layout="list"] .legend { display: none; }

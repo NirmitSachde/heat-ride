@@ -43,10 +43,12 @@ export async function playRibbon(el, frames, { labels = {}, autoplay = false, on
       const mid = ((r.start + r.end) / 2 / frames.n) * 100;
       const name = frames.areas[ai];
       const edge = k === 0 ? " first" : k === live.length - 1 ? " last" : "";
-      return `<span class="${edge}" style="left:${mid.toFixed(2)}%"><b>${name}</b>${labels[name] ? `<i>${labels[name]}</i>` : ""}</span>`;
+      return `<span class="${edge}" data-start="${r.start}" style="left:${mid.toFixed(2)}%"><b>${name}</b>${labels[name] ? `<i>${labels[name]}</i>` : ""}</span>`;
     })
     .join("");
 
+  // each place label appears when the ribbon starts drawing that place's strokes
+  const labelEls = [...labelBox.querySelectorAll("span")].map((el) => ({ el, start: +el.dataset.start, on: false }));
   const { default: P5 } = await import("p5");
   if (done) return;
 
@@ -99,6 +101,7 @@ export async function playRibbon(el, frames, { labels = {}, autoplay = false, on
     const e = now - t0;
     target = Math.min(n, Math.ceil((e / DRAW_MS) * n));
     inst.redraw();
+    for (const l of labelEls) if (!l.on && target > l.start) { l.on = true; l.el.classList.add("on"); }
     if (e >= DRAW_MS + HOLD_MS) {
       finish();
       return false;

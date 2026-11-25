@@ -1,16 +1,32 @@
 // The three-way slider: normal color | near-infrared | thermal.
 // Three stacked images; the upper two are cut with CSS clip-path inset() driven by two
-// custom properties (--a, --b). Two native range inputs give keyboard and touch control.
-// Moving a handle only writes custom properties: no layout, no reflow.
+// custom properties (--a, --b). Moving a handle only writes custom properties: no layout.
+//
+// Input:
+// - two handles with role="slider": Tab focuses them, arrows move them, Home/End jump,
+//   PageUp/PageDown take big steps;
+// - pointer: a drag anywhere on the picture moves the nearest handle (touch keeps vertical
+//   page scrolling through touch-action: pan-y);
+// - the handles keep a minimum gap, so the middle view never disappears under a user's drag.
 
 import { tween } from "./clock.js";
 
 const LABELS = ["Normal", "Near-infrared", "Thermal"];
-const STEPS = 1000;
-let uid = 0;
+const SAY = [
+  "Normal: the street as your eyes see it.",
+  "Near-infrared: healthy plants glow green.",
+  "Thermal: bright is warm, dark is cool.",
+];
+const GAP = 0.08; // smallest share of the width the middle view keeps during a drag
+const KEY_STEP = 0.05;
+const PAGE_STEP = 0.2;
+const HINT_KEY = "street-skin:slider-used";
+const COARSE = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+
+let hintDone = false;
+try { hintDone = localStorage.getItem(HINT_KEY) === "1"; } catch { /* storage blocked: show the hint */ }
 
 export function createSlider(root, { handles = true, compact = false } = {}) {
-  const id = `tri${++uid}`;
   root.classList.add("tri");
   if (compact) root.classList.add("tri-compact");
   root.innerHTML = `
@@ -25,47 +41,54 @@ export function createSlider(root, { handles = true, compact = false } = {}) {
         <span class="tri-l tri-l1">${LABELS[1]}</span>
         <span class="tri-l tri-l2">${LABELS[2]}</span>
       </div>
-    </div>
-    <div class="tri-ctl">
-      <label class="sr-only" for="${id}a">Edge between normal and near-infrared view</label>
-      <input id="${id}a" class="tri-in tri-in-a" type="range" min="0" max="${STEPS}" step="1" value="0">
-      <label class="sr-only" for="${id}b">Edge between near-infrared and thermal view</label>
-      <input id="${id}b" class="tri-in tri-in-b" type="range" min="0" max="${STEPS}" step="1" value="0">
+      <div class="tri-knob tri-knob-a" role="slider" tabindex="0" aria-orientation="horizontal"
+        aria-label="Edge between the normal and near-infrared views" aria-valuemin="0" aria-valuemax="100"></div>
+      <div class="tri-knob tri-knob-b" role="slider" tabindex="0" aria-orientation="horizontal"
+        aria-label="Edge between the near-infrared and thermal views" aria-valuemin="0" aria-valuemax="100"></div>
+      <p class="tri-hint" aria-hidden="true">Drag the handles</p>
+      <p class="tri-caption" aria-live="polite"></p>
     </div>
     <p class="tri-note" hidden></p>`;
 
   const frame = root.querySelector(".tri-frame");
   const imgs = { r: root.querySelector(".tri-r"), n: root.querySelector(".tri-n"), t: root.querySelector(".tri-t") };
-  const inA = root.querySelector(".tri-in-a");
-  const inB = root.querySelector(".tri-in-b");
+  const knobA = root.querySelector(".tri-knob-a");
+  const knobB = root.querySelector(".tri-knob-b");
   const labels = root.querySelectorAll(".tri-l");
+  const caption = root.querySelector(".tri-caption");
   const note = root.querySelector(".tri-note");
   const style = root.style;
 
   let a = 0, b = 0;
   let cancel = null;
   let full = true;
+  let wantHandles = handles;
+  let lastSaid = -1;
 
   function apply() {
     style.setProperty("--a", a.toFixed(4));
     style.setProperty("--b", b.toFixed(4));
-    // label centred in its region, hidden when the region is too thin
     style.setProperty("--m0", (a / 2).toFixed(4));
     style.setProperty("--m1", ((a + b) / 2).toFixed(4));
     style.setProperty("--m2", ((b + 1) / 2).toFixed(4));
     labels[0].classList.toggle("off", a < 0.12);
     labels[1].classList.toggle("off", b - a < 0.16);
     labels[2].classList.toggle("off", 1 - b < 0.12);
-    inA.value = Math.round(a * STEPS);
-    inB.value = Math.round(b * STEPS);
-    inA.setAttribute("aria-valuetext", `${Math.round(a * 100)}% normal`);
-    inB.setAttribute("aria-valuetext", `${Math.round((1 - b) * 100)}% thermal`);
-    // when both handles sit on the right, the left one must be on top to be grabbable
-    root.classList.toggle("a-top", a > 0.5);
+    knobA.setAttribute("aria-valuenow", String(Math.round(a * 100)));
+    knobB.setAttribute("aria-valuenow", String(Math.round(b * 100)));
+    knobA.setAttribute("aria-valuetext", `${Math.round(a * 100)}% normal photo`);
+    knobB.setAttribute("aria-valuetext", `${Math.round((1 - b) * 100)}% thermal photo`);
   }
 
+  function say(region) {
+    if (region === lastSaid) return;
+    lastSaid = region;
+    caption.textContent = SAY[region];
+  }
+
+  /** Programmatic position (scroll steps). Extremes allowed; animated over 600 ms. */
   function set(na, nb, animate = false) {
-    if (!full) { na = 0; nb = 0; } // thermal only: nothing to reveal
+    if (!full) { na = 0; nb = 0; }
     na = Math.max(0, Math.min(1, na));
     nb = Math.max(na, Math.min(1, nb));
     if (cancel) { cancel(); cancel = null; }
@@ -77,21 +100,92 @@ export function createSlider(root, { handles = true, compact = false } = {}) {
     });
   }
 
-  inA.addEventListener("input", () => {
-    if (cancel) { cancel(); cancel = null; }
-    a = Math.min(+inA.value / STEPS, b);
-    apply();
-  });
-  inB.addEventListener("input", () => {
-    if (cancel) { cancel(); cancel = null; }
-    b = Math.max(+inB.value / STEPS, a);
-    apply();
-  });
+  function used() {
+    if (!hintDone) {
+      hintDone = true;
+      try { localStorage.setItem(HINT_KEY, "1"); } catch { /* fine */ }
+    }
+    root.classList.add("hint-off");
+  }
 
+  /** User move of one handle, with the minimum gap kept. */
+  function moveHandle(which, v) {
+    if (cancel) { cancel(); cancel = null; }
+    v = Math.max(0, Math.min(1, v));
+    if (which === "a") {
+      const na = Math.min(v, Math.max(0, b - GAP));
+      if (na !== a) say(na > a ? 0 : 1);
+      a = na;
+    } else {
+      const nb = Math.max(v, Math.min(1, a + GAP));
+      if (nb !== b) say(nb > b ? 1 : 2);
+      b = nb;
+    }
+    apply();
+    used();
+  }
+
+  // ---- keyboard ----
+  function onKey(which) {
+    return (e) => {
+      const cur = which === "a" ? a : b;
+      let v = null;
+      switch (e.key) {
+        case "ArrowRight": case "ArrowUp": v = cur + KEY_STEP; break;
+        case "ArrowLeft": case "ArrowDown": v = cur - KEY_STEP; break;
+        case "PageUp": v = cur + PAGE_STEP; break;
+        case "PageDown": v = cur - PAGE_STEP; break;
+        case "Home": v = 0; break;
+        case "End": v = 1; break;
+        default: return;
+      }
+      e.preventDefault();
+      moveHandle(which, v);
+    };
+  }
+  knobA.addEventListener("keydown", onKey("a"));
+  knobB.addEventListener("keydown", onKey("b"));
+
+  // ---- pointer: drag anywhere, nearest handle ----
+  // Mouse and pen start at once. Touch waits for a mostly sideways move, so a vertical swipe
+  // over the picture still scrolls the page and never nudges a handle.
+  let dragging = null;
+  let pending = null;
+  let rect = null;
+  function begin(e, u) {
+    const da = Math.abs(u - a), db = Math.abs(u - b);
+    // nearest handle; on a tie pick the one that can move toward the pointer
+    dragging = da < db ? "a" : db < da ? "b" : u < a ? "a" : "b";
+    (dragging === "a" ? knobA : knobB).focus({ preventScroll: true });
+    try { frame.setPointerCapture(e.pointerId); } catch { /* pointer already gone */ }
+    root.classList.add("dragging");
+    moveHandle(dragging, u);
+  }
+  frame.addEventListener("pointerdown", (e) => {
+    if (!full || root.classList.contains("no-handles") || e.button > 0) return;
+    rect = frame.getBoundingClientRect(); // one read per drag
+    const u = (e.clientX - rect.left) / rect.width;
+    if (e.pointerType === "touch") pending = { x: e.clientX, y: e.clientY };
+    else begin(e, u);
+  });
+  frame.addEventListener("pointermove", (e) => {
+    if (pending) {
+      const dx = e.clientX - pending.x, dy = e.clientY - pending.y;
+      if (Math.abs(dx) > 6 && Math.abs(dx) > Math.abs(dy)) { pending = null; begin(e, (e.clientX - rect.left) / rect.width); }
+      else if (Math.abs(dy) > 10) pending = null;
+      return;
+    }
+    if (!dragging) return;
+    moveHandle(dragging, (e.clientX - rect.left) / rect.width);
+  });
+  const end = () => { dragging = null; pending = null; root.classList.remove("dragging"); };
+  frame.addEventListener("pointerup", end);
+  frame.addEventListener("pointercancel", end);
+
+  // ---- images, with fallbacks ----
   // Each source may be a list of candidates: on a load error the next one is tried.
   // If the normal or near-infrared photo cannot be loaded at all, the slider falls back to thermal only.
   let token = 0;
-  let wantHandles = handles;
   function degrade() {
     if (!full) return;
     full = false;
@@ -112,7 +206,6 @@ export function createSlider(root, { handles = true, compact = false } = {}) {
       img.removeAttribute("src");
       if (k !== "t") degrade();
     };
-    img.onload = null;
     if (img.getAttribute("src") !== cands[0]) img.src = cands[0];
     img.hidden = false;
   }
@@ -137,14 +230,21 @@ export function createSlider(root, { handles = true, compact = false } = {}) {
       note.textContent = "Only the thermal photo is shared for this spot.";
       set(0, 0);
     }
+    lastSaid = -1;
+    caption.textContent = "";
     showHandles(wantHandles);
   }
 
   function showHandles(on) {
     wantHandles = on;
-    root.classList.toggle("no-handles", !on || !full);
-    inA.tabIndex = on && full ? 0 : -1;
-    inB.tabIndex = on && full ? 0 : -1;
+    const live = on && full;
+    root.classList.toggle("no-handles", !live);
+    root.classList.toggle("hint-off", hintDone || !live);
+    knobA.tabIndex = live ? 0 : -1;
+    knobB.tabIndex = live ? 0 : -1;
+    knobA.setAttribute("aria-hidden", String(!live));
+    knobB.setAttribute("aria-hidden", String(!live));
+    if (live && lastSaid < 0) caption.textContent = COARSE ? "Drag the handles to compare the three views." : "Drag the handles, or use the arrow keys, to compare the three views.";
   }
 
   showHandles(handles);

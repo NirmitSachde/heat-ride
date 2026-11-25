@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(here, "../screenshots");
 mkdirSync(OUT, { recursive: true });
-const BASE = process.argv[2] || "http://localhost:4317/street-skin/";
+const BASE = process.argv[2] || `http://localhost:${process.env.PORT || 4317}/street-skin/`;
 
 function findChrome() {
   if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
@@ -34,6 +34,10 @@ const VIEWPORTS = [
   { name: "desktop", viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 },
   { name: "phone", viewport: { width: 375, height: 812 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
   { name: "tablet", viewport: { width: 768, height: 1024 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true },
+  { name: "iphone", viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
+  { name: "android", viewport: { width: 412, height: 915 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
+  { name: "ipad", viewport: { width: 820, height: 1180 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true },
+  { name: "laptop", viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 },
 ];
 // optional filters: VPS=desktop,phone  ONLY=04,06  (shot name prefixes)
 const VPS = process.env.VPS ? process.env.VPS.split(",") : ["desktop", "phone"];
@@ -47,7 +51,9 @@ const SHOTS = [
   { name: "04-question", sel: '.step-question[data-st="1"]' },
   { name: "05-question-hover", sel: '.step-question[data-st="3"]', hover: true },
   { name: "06-places", sel: '.step-places[data-st="1"]' },
+  { name: "06b-places-rank", sel: '.step-places[data-st="2"]' },
   { name: "07-trees", sel: ".step-trees", optional: true },
+  { name: "08a-sowhat", sel: '.step-sowhat[data-st="0"]' },
   { name: "08-sowhat", sel: '.step-sowhat[data-st="1"]' },
   { name: "09-explore", sel: ".step-explore", wait: 3000 },
   { name: "10-explore-detail", sel: ".step-explore", detail: true },

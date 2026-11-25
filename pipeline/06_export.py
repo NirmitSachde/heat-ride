@@ -71,23 +71,6 @@ agg = agg[agg.n >= 2]
 seg = edges.merge(agg, left_on=["area", "u", "v", "key"], right_on=["AreaName", "u", "v", "key"])
 
 # priority: warm AND not green, within each place; at least 3 photos with a plant reading
-cand = seg[(seg.n >= 3) & (seg.n_green >= 3)].copy()
-cand["score"] = (cand.groupby("area").warmth.rank(pct=True)
-                 + 1 - cand.groupby("area").green.rank(pct=True))
-cand = cand.sort_values("score", ascending=False)
-picked, per_area, names = [], {}, set()
-for idx, r in cand.iterrows():  # named streets only, each once, at most 3 per place
-    key = (r["area"], r["name"])
-    if pd.isna(r["name"]) or key in names:
-        continue
-    if per_area.get(r["area"], 0) < 3 and len(picked) < 10:
-        picked.append(idx)
-        names.add(key)
-        per_area[r["area"]] = per_area.get(r["area"], 0) + 1
-seg["priority"] = None
-for rank, idx in enumerate(picked, 1):
-    seg.loc[idx, "priority"] = rank
-
 # ---- statistics for the copy
 def rho(a, b):
     ok = a.notna() & b.notna()
@@ -155,14 +138,39 @@ for a in AREAS:
         toward_sun=round(float(b[2]), 2), toward_sun_ci=[round(float(lo[2]), 2), round(float(hi[2]), 2)],
         green_effect_clear=clear, n=int(len(x)), n_streets=int(len(ids)))
 
+# ---- "a tree here would likely help": only in places where greener streets were measurably
+# cooler (the model's 95% interval excludes zero). Within those places, rank named stretches
+# with at least 4 photos, at least 1.5 C warmer than their hour, green below the place median and 25%,
+# by warmth percentile + bareness percentile (equal weight).
+clear = [a for a in AREAS if story["areas"][a]["model"]["green_effect_clear"]]
+cand = seg[(seg.n >= 4) & (seg.n_green >= 4) & seg["area"].isin(clear)].copy()
+place_green = g.groupby("AreaName").green_share.median()
+cand = cand[(cand.warmth >= 1.5) & (cand.green <= cand["area"].map(place_green).clip(upper=0.25))]  # clearly warm, bare
+cand["score"] = (cand.groupby("area").warmth.rank(pct=True)
+                 + 1 - cand.groupby("area").green.rank(pct=True))
+cand = cand.sort_values("score", ascending=False)
+cap = max(1, 10 // max(1, len(clear)))
+picked, per_area, names = [], {}, set()
+for idx, r in cand.iterrows():  # named streets only, each once, an even share per place
+    key = (r["area"], r["name"])
+    if pd.isna(r["name"]) or key in names:
+        continue
+    if per_area.get(r["area"], 0) < cap and len(picked) < 10:
+        picked.append(idx)
+        names.add(key)
+        per_area[r["area"]] = per_area.get(r["area"], 0) + 1
+seg["priority"] = None
+for rank, idx in enumerate(picked, 1):
+    seg.loc[idx, "priority"] = rank
+story["priority_areas"] = clear
+story["priority_count"] = len(picked)
+
 hr, hp, hn = rho(g.plant_health, g.w)
 story["trees"] = dict(spearman=hr, p=hp, n=hn,
                       health_warm20=round(float(g.plant_health[q == 4].median()), 3),
                       health_cool20=round(float(g.plant_health[q == 0].median()), 3))
 story["trees"]["show"] = bool(abs(hr) >= 0.1 and hp < 0.001)
 story["ramp_domain"] = [round(float(d.w.quantile(0.03)), 1), round(float(d.w.quantile(0.97)), 1)]
-story["priority_count"] = len(picked)
-
 DATA.mkdir(parents=True, exist_ok=True)
 (INT / "story_stats.json").write_text(json.dumps(story, indent=2))
 d.to_parquet(INT / "export_frames.parquet", index=False)

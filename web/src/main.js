@@ -19,12 +19,14 @@ const AUTOPLAY_SECS = Math.max(10, +(params.get("secs") || 60));
 
 const $ = (s, r = document) => r.querySelector(s);
 const stage = $("#stage");
-const phoneMQ = matchMedia("(max-width: 720px)");
+// "compact" = phones and portrait tablets: panels stack and step text moves into the dock
+const phoneMQ = matchMedia("(max-width: 900px)");
 let phone = phoneMQ.matches;
 phoneMQ.addEventListener("change", (e) => { phone = e.matches; });
 const isPhone = () => phone;
 
 if (AUTOPLAY) document.documentElement.classList.add("autoplay");
+document.documentElement.classList.add("intro"); // story text stays hidden until the ribbon has gone
 if (reducedMotion) document.documentElement.classList.add("reduced-motion");
 
 const fmtDeg = (v) => `${v < 0 ? "−" : "+"}${Math.abs(v).toFixed(1)}°C`;
@@ -39,6 +41,7 @@ async function main() {
     console.warn(err);
     $("#steps").innerHTML = `<div class="step"><div class="card"><h2 class="card-title">The data has not landed yet.</h2><p class="card-body">Run <code>npm run mock</code> for mock data, or the pipeline export for the real thing.</p></div></div>`;
     $("#ribbon")?.remove();
+    document.documentElement.classList.remove("intro");
     return;
   }
   const { story, frames, segments } = model;
@@ -57,6 +60,8 @@ async function main() {
   $(".legend-bar").style.background = cssGradient();
   $(".legend .lo").textContent = lo < 0 ? `${Math.abs(lo)}°C cooler` : fmtDeg(lo);
   $(".legend .hi").textContent = hi > 0 ? `${hi}°C warmer` : fmtDeg(hi);
+  const stopAt = Math.max(Math.abs(lo), Math.abs(hi));
+  $(".legend-note").innerHTML = `<span class="note-long">Colors stop at ${stopAt}°C either way; the charts run further. Streets are only compared within one place and hour, so places can't be ranked.</span><span class="note-short">Colors stop at ${stopAt}°C either way. Places can't be ranked against each other.</span>`;
 
   // ---- hero slider (hook + chapter 1) ----
   const hero = createSlider($("#hero-slider"), { handles: false });
@@ -77,6 +82,7 @@ async function main() {
   const ribbonDone = new Promise((resolve) => {
     playRibbon($("#ribbon"), frames, { labels, autoplay: AUTOPLAY, onDone: resolve });
   });
+  ribbonDone.then(() => document.documentElement.classList.remove("intro"));
 
   // ---- lazy modules: the map (maplibre + deck.gl) and charts (d3) ----
   let mapApi = null;
@@ -130,7 +136,7 @@ async function main() {
       const p = f.properties;
       return `<li><button type="button" data-k="${k}">
         <span class="pr-rank">${p.priority}</span>
-        <span class="pr-name">${p.name || "Unnamed street"}<small>${p.area}</small></span>
+        <span class="pr-name">${p.name || "Unnamed street"}<small>${p.area} · ${p.n} photo${p.n === 1 ? "" : "s"}</small></span>
         <span class="pr-stats"><b><span class="sw" style="background:${cssOf(p.warmth)}"></span>${fmtRel(p.warmth)}</b><i>${p.green == null ? "green n/a" : `${fmtPct(p.green)} green`}</i></span>
       </button></li>`;
     })
@@ -233,7 +239,8 @@ async function main() {
     stage.dataset.chapter = ch.id;
     stage.classList.toggle("show-legend", !!ch.legend);
     if (st.slider) hero.set(st.slider[0], st.slider[1], !instant);
-    hero.showHandles(!!ch.sliderHandles && !AUTOPLAY);
+    hero.showHandles(!!(st.handles ?? ch.sliderHandles) && !AUTOPLAY);
+    if (ci > 0 || si > 0) document.documentElement.classList.add("cue-off");
     if (ch.id !== "explore") closeDetail();
     if (ch.chart) ensureCharts(ch, st);
 
@@ -253,13 +260,28 @@ async function main() {
   }
 
   let lastDir = "down";
+  // ---- dock: on compact screens, the text of chapters with panels sits in a fixed slot ----
+  const dock = $("#dock");
+  let dockFlip = false;
+  function syncDock(el) {
+    const card = el && el.querySelector(".card");
+    const docked = !!card && phone && el.classList.contains("dockable");
+    stage.classList.toggle("docked", docked);
+    if (!docked) return;
+    dock.innerHTML = card.innerHTML;
+    dockFlip = !dockFlip;
+    dock.classList.toggle("flip", dockFlip); // alternating animation names restart the fade without a reflow
+  }
+
   function onStep(ci, si, dir, el) {
     lastDir = dir;
     if (activeEl) activeEl.classList.remove("active");
     el.classList.add("active");
     activeEl = el;
     applyStep(ci, si);
+    syncDock(el);
   }
+  phoneMQ.addEventListener("change", () => syncDock(activeEl));
   function onProgress(ci, si, p) {
     const ch = active[ci];
     if (ch.time !== "scroll" || !mapApi || reducedMotion) return;

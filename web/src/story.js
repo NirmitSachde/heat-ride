@@ -53,18 +53,23 @@ export function linkWords(r, p) {
 export const scoreWords = (r) => `Link score ${FMT.n2(r)} on a scale from ${MINUS}1 to 1 (0 means no link).`;
 const joinWords = (xs) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
 
+/** "0.23°C cooler" / "0.77°C warmer" for a change in warmth. */
+const coolerWarmer = (v) => `${Math.abs(+v).toFixed(2)}°C ${+v < 0 ? "cooler" : "warmer"}`;
+
 /** One plain sentence per place from its model (falls back to the rank link if there is no model). */
 export function placeWords(a) {
   const m = a && a.model;
   if (!m || m.per10_green == null) return { sentence: linkWords(a.spearman, a.p), score: scoreWords(a.spearman) };
   const v = m.per10_green;
   const ci = m.per10_green_ci || [];
-  const range = ci.length === 2 ? `Likely range: ${FMT.n2(ci[0])} to ${FMT.n2(ci[1])}°C per extra tenth of green.` : "";
+  let range = "";
+  if (ci.length === 2) {
+    range = ci[0] < 0 && ci[1] > 0
+      ? `Likely range: from ${coolerWarmer(ci[0])} to ${coolerWarmer(ci[1])}, so no clear difference.`
+      : `Likely range: ${Math.abs(ci[0] < 0 ? ci[1] : ci[0]).toFixed(2)} to ${Math.abs(ci[0] < 0 ? ci[0] : ci[1]).toFixed(2)}°C ${ci[0] < 0 ? "cooler" : "warmer"}.`;
+  }
   if (m.green_effect_clear) {
-    return {
-      sentence: `Each extra tenth of green came with about ${FMT.abs2(v)} degrees ${v < 0 ? "less" : "more"} warmth.`,
-      score: range,
-    };
+    return { sentence: `For every 10 more percent of the view that is green, streets ran about ${coolerWarmer(v)}.`, score: range };
   }
   return { sentence: "No clear difference once we account for which way the bike faced the sun.", score: range };
 }
@@ -116,6 +121,25 @@ export function buildContext(story, frames, rideArea = "Arnhem") {
   const clearLabels = joinWords(areaNames.filter(coolerOf).map(labelOf));
   const unclearLabels = joinWords(areaNames.filter((a) => !coolerOf(a)).map(labelOf));
   const t = story.trees || {};
+  // places where the tree list ranks streets (story.json.priority_areas), and the others
+  const prioNames = Array.isArray(story.priority_areas) && story.priority_areas.length ? story.priority_areas : areaNames;
+  const prioLabels = joinWords(prioNames.filter((a) => story.areas[a]).map(labelOf));
+  const nonPrioLabels = joinWords(areaNames.filter((a) => !prioNames.includes(a)).map(labelOf));
+  // the subhead is composed here from the per-place models, so its wording follows the story's style
+  const clearPer10 = areaNames.filter(coolerOf).map((a) => story.areas[a].model?.per10_green).filter((v) => v != null);
+  let subhead = story.subhead || null;
+  if (hasModel && clearPer10.length) {
+    const avg = clearPer10.reduce((x, y) => x + y, 0) / clearPer10.length;
+    subhead = `In ${clearLabels}, for every 10 more percent of the view that is green, streets ran about ${Math.abs(avg).toFixed(2)}°C cooler.`
+      + (unclearLabels ? ` In ${unclearLabels}, once we account for which way the bike faced the sun, green made no clear difference.` : "")
+      + (variant === "not_clearly" ? " It was autumn: shade does most of its work in summer." : "");
+  }
+  const nav = typeof navigator !== "undefined" ? navigator : {};
+  const touch = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+  const mac = /Mac|iPhone|iPad/i.test((nav.userAgentData && nav.userAgentData.platform) || nav.platform || "");
+  const zoomHint = touch
+    ? "Use two fingers to move and zoom the map."
+    : `Drag to move the map. Hold ${mac ? "Cmd" : "Ctrl"} and scroll to zoom.`;
   return {
     ...story,
     variant,
@@ -125,6 +149,10 @@ export function buildContext(story, frames, rideArea = "Arnhem") {
     frames: { n: frames.n },
     frame: { cool: frameInfo(cf.cool), warm: frameInfo(cf.warm), green: frameInfo(cf.green), example: frameInfo(cf[exampleKey]) },
     verdict: { clear: clearCount, cooler: coolerCount, coolerLabels: clearLabels, otherLabels: unclearLabels, otherCount: areaNames.length - coolerCount },
+    subhead,
+    zoomHint,
+    tree: { labels: prioLabels, othersSentence: nonPrioLabels ? ` In ${nonPrioLabels} we found no clear link, so we don't rank streets there.` : "" },
+    dark: (() => { let k = 0; for (let i = 0; i < frames.n; i++) if (frames.g[i] !== frames.g[i]) k++; return { n: k, pct: frames.n ? k / frames.n : 0 }; })(),
     treesDiff: t.health_cool20 != null && t.health_warm20 != null ? t.health_cool20 - t.health_warm20 : null,
   };
 }
@@ -141,6 +169,7 @@ export const COPY = {
     kicker: "What we found",
     title: "{headline}",
     body: "{subhead}",
+    note: "Every °C in this story is on the thermal camera's own scale and compared with other streets ridden in the same place and hour. It is not an air temperature.",
   },
   "beyond.rgb": { kicker: "Three ways to see one street", body: "This is a normal photo. It shows the street the way your eyes do." },
   "beyond.nir": { body: "This is near-infrared, light our eyes can't see. Healthy leaves reflect lots of it, so plants glow green." },
@@ -179,6 +208,11 @@ export const COPY = {
     title: "From a village to a big city",
     body: "The same chart, {places.count|word} times. Smallest place first, biggest last. Does the pattern hold?",
   },
+  "places.rank": {
+    kicker: "Which place was warmest?",
+    title: "We can't say.",
+    body: "Each place was ridden on different days, with a camera whose absolute readings drift. So we only compare streets within the same place and hour, never one place with another.",
+  },
   "places.verdict": {
     body: {
       cooler: "Greener streets ran clearly cooler in {verdict.cooler|word} of the {places.count|word} places. The pattern is not a big-city quirk.",
@@ -192,20 +226,14 @@ export const COPY = {
   },
   "sowhat.body": {
     kicker: "So what",
-    title: {
-      cooler: "Trees are the cheapest air conditioner",
-      not_clearly: "Some streets still run hot",
-    },
-    body: {
-      cooler: "Here is where one is missing. These are the {priority_count|int} stretches of street that ran warmest with the least green.",
-      not_clearly: "Even on a mild autumn day, some stretches ran warmer than the streets around them, with almost nothing green in view. These are the {priority_count|int} warmest, least green stretches across the {places.count|word} places. Shade does most of its work in summer.",
-    },
+    title: "Where a tree would likely help",
+    body: "In {tree.labels}, where greener streets ran measurably cooler, these {priority_count|int} stretches were among the warmest and barest.{tree.othersSentence}",
   },
-  "sowhat.list": { body: "A tree here would help most. Pick a stretch in the list to fly to it." },
+  "sowhat.list": { body: "Pick a stretch in the list to fly to it. Treat them as places worth a closer look, not a planting plan." },
   "explore.body": {
     kicker: "Explore",
     title: "Your turn",
-    body: "Pick a place, then tap any dot to see what the cameras saw. Drag to move the map. Pinch, or hold Ctrl (Cmd on a Mac) and scroll, to zoom.",
+    body: "Pick a place, then tap any dot to see what the cameras saw. Ringed spots have all three photos. {zoomHint}",
   },
 };
 
@@ -238,7 +266,8 @@ export function buildSteps(container, story, ctx) {
   const html = [];
   active.forEach((ch, ci) => {
     ch.steps.forEach((st, si) => {
-      const cls = ["step", `step-${ch.id}`, si === 0 ? "first" : "", st.tall ? "tall" : "", ch.id === "hook" && si === 0 ? "hook-first" : ""].filter(Boolean).join(" ");
+      const dockable = ["split", "list", "chart", "explore"].includes(ch.layout);
+      const cls = ["step", `step-${ch.id}`, dockable ? "dockable" : "", si === 0 ? "first" : "", st.tall ? "tall" : "", ch.id === "hook" && si === 0 ? "hook-first" : ""].filter(Boolean).join(" ");
       const idAttr = ch.id === "explore" ? ' id="explore-anchor"' : "";
       html.push(`<div class="${cls}" data-ch="${ci}" data-st="${si}"${idAttr}><div class="card" data-layout="${ch.layout}">${renderCopy(st.copy, ctx)}</div></div>`);
     });
@@ -273,11 +302,12 @@ export function renderHow(ctx) {
 
     <h3>Method</h3>
     <ul>
-      <li><b>Green in view:</b> the share of each near-infrared photo where plants reflect strongly. ${fill("{overall.n|int}", ctx)} photos were bright enough to measure this.</li>
+      <li><b>Green in view:</b> the share of each near-infrared photo where plants reflect strongly (a vegetation index, NDVI, above 0.3). ${fill("{dark.n|int} photos ({dark.pct|pct}) were too dark to measure plants and are left out of the green charts.", ctx)}</li>
       <li><b>Warmth:</b> ${ctx.measure_note ? fill("{measure_note}", ctx) : "how warm the street's surfaces were, compared with the other streets ridden in the same place during the same hour."}</li>
-      <li><b>The line in the charts</b> follows the middle (median) warmth for each slice of green.</li>
-      <li><b>The sentence for each place</b> is the change in warmth for each extra tenth of green in view, after accounting for riding toward the sun and for open sky. The likely range comes from resampling whole streets (a 95% bootstrap interval). If that range includes zero, we call it "no clear difference".</li>
-      <li><b>Where a tree would help most:</b> street stretches with at least two photos, ranked by high warmth and low green together.</li>
+      <li><b>The line in the charts</b> follows the middle (median) warmth for each slice of green, only where a slice holds enough photos.</li>
+      <li><b>The sentence for each place</b> comes from a model fitted separately for each place: warmth explained by green in view, by riding toward the sun and by open sky. It gives the change in warmth for every 10 more percent of the view that is green. The likely range comes from resampling whole streets many times (a 95% bootstrap interval). If that range includes zero, we call it "no clear difference".</li>
+      <li><b>Where a tree would likely help:</b> named street stretches with 4 or more photos, at least 1.5°C warmer than their hour, with less green than the place's median and below 25%, only in places where green had a clear cooling effect. They are ranked by warmth and bareness together, within each place.</li>
+      <li><b>Code and data:</b> <a href="https://github.com/NirmitSachde/street-skin" rel="noopener">github.com/NirmitSachde/street-skin</a></li>
     </ul>
 
     <h3>Limits</h3>

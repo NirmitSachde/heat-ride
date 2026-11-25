@@ -23,12 +23,13 @@ export const CHAPTERS = [
   {
     id: "beyond",
     layout: "image",
-    sliderHandles: true,
+    sliderHandles: false,
     steps: [
       { copy: "beyond.rgb", slider: [1, 1] },
       { copy: "beyond.nir", slider: [0, 1] },
       { copy: "beyond.thermal", slider: [0, 0] },
-      { copy: "beyond.try", slider: [0.34, 0.67] },
+      // handles appear only here, already apart at a third and two thirds
+      { copy: "beyond.try", slider: [0.34, 0.67], handles: true },
     ],
   },
   {
@@ -58,7 +59,7 @@ export const CHAPTERS = [
     id: "places",
     layout: "chart",
     chart: "multiples",
-    steps: [{ copy: "places.intro" }, { copy: "places.verdict" }],
+    steps: [{ copy: "places.intro" }, { copy: "places.verdict" }, { copy: "places.rank" }],
   },
   {
     id: "trees",

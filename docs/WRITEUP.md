@@ -16,15 +16,15 @@ On the same day, are greener streets cooler at street level, and does that hold 
 
 ## Finding
 Greener streets were only a little cooler, and only in two of the four places.
-- Oirschot (town): about 0.23 C cooler per extra tenth of green in view (95% interval 0.06 to 0.38).
-- Delft (small city): about 0.24 C cooler per extra tenth (0.05 to 0.40).
+- Oirschot (town): about 0.23 C cooler for every 10 more percent of the view that is green (95% interval 0.06 to 0.38).
+- Delft (small city): about 0.24 C cooler per 10 percent (0.05 to 0.40).
 - Arnhem (big city): no clear difference (-0.18 to +0.08).
 - Middelbeers (village): no clear difference (-0.20 to +0.77). Its raw numbers even point the other way, but those spots were mostly trees lit from behind by the sun.
 - Across all places, the greenest fifth of spots read 0.8 C cooler than the least green fifth, while spots ridden in the same hour spread over about 7.5 C (10th to 90th percentile). Green explains a small part of how warm a street's surfaces were in autumn.
 - Plant health (median NDVI of plant pixels) showed no meaningful link with warmth (Spearman -0.05), so that chapter was dropped.
 
 ## So what
-The ten named street stretches that were both among the warmest and least green in their place (for example Willibrordstraat in Middelbeers, Leeghwaterstraat and Stieltjesweg in Delft, Willemsplein in Arnhem) are marked as places where a tree would help most. In October the effect of green is small; shade does most of its work in summer, so this is a lower bound, not a forecast.
+Only in the two places where green made a measurable difference (Oirschot and Delft), six named street stretches are marked as places where a tree would likely help most: at least 4 photos, at least 1.5 C warmer than the streets ridden that hour, and less than 25% green, ranked by warmth and bareness together (Oude Grintweg, Spoordonkseweg, Castaert, Rijkesluisstraat and Zoete Ermgaard in Oirschot, Stieltjesweg in Delft). The village and the big city are not ranked, because there the data shows no clear link between green and warmth. The four places cannot be ranked against each other either: each was ridden on different days with a camera whose absolute readings drift. In October the effect of green is small; shade does most of its work in summer, so this is a lower bound, not a forecast.
 
 ## Limits
 - Autumn, around midday, one or two days per place; two places were mostly overcast (Delft, Arnhem) and two mostly sunny (Oirschot, Middelbeers).

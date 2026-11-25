@@ -22,6 +22,8 @@ const getSegColor = (f) => f._rgb;
 const getHlPos = (d) => d.p;
 const getCursor = ({ isDragging, isHovering }) => (isDragging ? "grabbing" : isHovering ? "pointer" : "grab");
 const HL_LINE = [255, 246, 213, 255];
+const RING = [255, 255, 255, 235];
+const COARSE = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
 const GLOW = [255, 246, 213, 70];
 
 export function createMap(container, model, { isPhone, onPick }) {
@@ -88,6 +90,20 @@ export function createMap(container, model, { isPhone, onPick }) {
     dotCache.set(key, d);
     return d;
   }
+  // spots with all three photos (hero), drawn as white rings in explore
+  const heroCache = new Map();
+  function heroFor(key) {
+    if (heroCache.has(key)) return heroCache.get(key);
+    let lo = 0, hi = frames.n;
+    if (key.startsWith("lite:")) { const r = frames.ranges[areaIndex(key.slice(5))]; lo = r.start; hi = r.end; }
+    let m = 0;
+    for (let i = lo; i < hi; i++) if (frames.hero[i]) m++;
+    const pos = new Float32Array(m * 2);
+    for (let i = lo, j = 0; i < hi; i++) if (frames.hero[i]) { pos[2 * j] = frames.pos[2 * i]; pos[2 * j + 1] = frames.pos[2 * i + 1]; j++; }
+    const d = { length: m, attributes: { getPosition: { value: pos, size: 2 } } };
+    heroCache.set(key, d);
+    return d;
+  }
   const frameOf = (data, i) => (data.idx ? data.idx[i] : data.offset + i);
 
   function progressiveData(ai, k) {
@@ -132,6 +148,12 @@ export function createMap(container, model, { isPhone, onPick }) {
         highlightColor: HL_LINE, onClick: onDotClick,
       }));
     }
+    if (s.rings && s.rings.length) {
+      layers.push(new ScatterplotLayer({
+        id: "rings", data: s.rings, radiusUnits: "pixels", getRadius: s.radius + 2.2, stroked: true, filled: false,
+        getLineColor: RING, lineWidthUnits: "pixels", getLineWidth: 1.2, opacity: s.dotsOpacity,
+      }));
+    }
     if (s.hl) {
       layers.push(new ScatterplotLayer({
         id: "hl", data: [s.hl], getPosition: getHlPos, radiusUnits: "pixels", getRadius: 9,
@@ -141,7 +163,7 @@ export function createMap(container, model, { isPhone, onPick }) {
     return layers;
   }
 
-  const overlay = new MapboxOverlay({ interleaved: true, layers: [], getCursor });
+  const overlay = new MapboxOverlay({ interleaved: true, layers: [], getCursor, pickingRadius: COARSE ? 14 : 5 });
   map.addControl(overlay);
 
   let dirty = false;
@@ -203,9 +225,11 @@ export function createMap(container, model, { isPhone, onPick }) {
     const phone = isPhone();
     const p = { top: 48, bottom: 48, left: 48, right: 48 };
     if (phone) {
-      if (layout === "split") { p.bottom = h * 0.56 + 16; p.top = 56; }
-      else if (layout === "list") { p.bottom = h * 0.42 + 16; p.top = 56; }
-      else if (layout === "explore") { p.top = 96; p.bottom = 40; }
+      // compact screens: panels sit at the bottom with the text dock just above them
+      const dockH = Math.min(220, h * 0.26);
+      if (layout === "split") { p.bottom = h * 0.54 + 24 + dockH; p.top = 52; }
+      else if (layout === "list") { p.bottom = h * 0.42 + 24 + dockH; p.top = 52; }
+      else if (layout === "explore") { p.top = 150; p.bottom = dockH + 24; }
       else p.bottom = h * 0.3;
     } else {
       p.left = Math.min(500, w * 0.36);
@@ -321,7 +345,8 @@ export function createMap(container, model, { isPhone, onPick }) {
     syncProgressive();
     // segments
     s.segments = L.segments === "priority";
-    s.radius = ch.id === "explore" ? 3.2 : ch.id === "question" ? 2.4 : 2.8;
+    s.rings = L.dots === "explore" && key ? heroFor(key === "all" ? "all" : key) : null;
+    s.radius = ch.id === "explore" ? (COARSE ? 4.2 : 3.2) : ch.id === "question" ? 2.4 : 2.8;
     if (!ch.interactive) s.pickable = false;
     invalidate();
     moveCamera(ch.camera, ch.layout, instant);

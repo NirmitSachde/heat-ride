@@ -166,6 +166,11 @@
   "warmth_p90": 3.76,
   "camera_offset_median": 16.2
  },
+ "priority_areas": [
+  "Oirschot",
+  "Delft"
+ ],
+ "priority_count": 6,
  "trees": {
   "spearman": -0.054,
   "p": 0.0009346254624208684,
@@ -178,10 +183,9 @@
   -5.0,
   5.0
  ],
- "priority_count": 10,
  "headline_variant": "not_clearly",
  "headline": "Greener streets were only a little cooler, and only in two of the four places.",
- "subhead": "In the town and the small city, every extra tenth of green in view came with about a quarter of a degree less warmth. In the big city and the village, once we account for which way the bike faced the sun, green made no clear difference. It was autumn: shade does most of its work in summer.",
+ "subhead": "In the town and the small city, for every 10 more percent of the view that is green, streets ran about a quarter of a degree cooler. In the big city and the village, once we account for which way the bike faced the sun, green made no clear difference. It was autumn: shade does most of its work in summer.",
  "measure_note": "Warmth here means how warm everything the thermal camera saw along the street was (walls, trees, cars, pavement), compared with the other streets ridden in the same place during the same hour.",
  "hook_candidates": [
   "Oirschot_0451",

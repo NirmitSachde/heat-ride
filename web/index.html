@@ -14,7 +14,7 @@
     <div id="ribbon" class="ribbon" aria-hidden="true">
       <div class="ribbon-canvas"></div>
       <div class="ribbon-labels"></div>
-      <p class="ribbon-caption">Every photo spot, in the order it was ridden. Color: warmth. Height: green.</p>
+      <p class="ribbon-caption">Every photo, in the order it was ridden: color shows warmth, height shows green.</p>
       <button class="ribbon-skip chrome" type="button">Skip intro</button>
     </div>
 
@@ -40,12 +40,14 @@
         </section>
 
         <section class="panel panel-list" aria-label="Where a tree would help most">
-          <h3 class="panel-title">A tree here would help most</h3>
+          <h3 class="panel-title">Where a tree would likely help</h3>
           <ol id="priority-list" class="priority-list"></ol>
+          <p class="panel-foot">Ranked by warmth and bareness together, within each place.</p>
         </section>
 
         <div class="explore-ui">
           <div class="switcher" role="group" aria-label="Choose a place"></div>
+          <p class="explore-key"><span class="ring-sw" aria-hidden="true"></span>Ringed spots have all three photos</p>
         </div>
 
         <aside id="detail" class="detail" hidden aria-label="Photo spot">
@@ -55,10 +57,14 @@
         </aside>
 
         <div class="legend" aria-hidden="true">
-          <span class="legend-label">Compared with other streets that hour</span>
+          <span class="legend-label">Compared with other streets in the same place and hour</span>
           <span class="legend-bar"></span>
           <span class="legend-ticks"><span class="lo"></span><span class="hi"></span></span>
+          <span class="legend-note"></span>
         </div>
+
+        <div id="dock" class="dock" aria-hidden="true"></div>
+        <div class="scroll-cue" aria-hidden="true">Scroll<svg viewBox="0 0 16 16" width="16" height="16"><path d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       </div>
 
       <div id="steps" class="steps"></div>
