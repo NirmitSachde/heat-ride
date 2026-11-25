@@ -1,0 +1,207 @@
+{
+ "mock": false,
+ "areas": {
+  "Middelbeers": {
+   "label": "village",
+   "n": 611,
+   "n_green": 580,
+   "spearman": 0.141,
+   "p": 0.0006635610435968262,
+   "spearman_streets": -0.092,
+   "n_streets": 67,
+   "days": [
+    "2025-10-26"
+   ],
+   "air_mean": 9.9,
+   "cloud_mean": 28,
+   "green_median": 0.162,
+   "green_coolest20": 0.146,
+   "green_warmest20": 0.245,
+   "warmth_greenest20": 2.27,
+   "warmth_leastgreen20": 0.16,
+   "warmth_spread": 9.41,
+   "model": {
+    "per10_green": 0.3,
+    "per10_green_ci": [
+     -0.2,
+     0.77
+    ],
+    "toward_sun": 0.79,
+    "toward_sun_ci": [
+     -0.17,
+     1.67
+    ],
+    "green_effect_clear": false,
+    "n": 568,
+    "n_streets": 95
+   }
+  },
+  "Oirschot": {
+   "label": "town",
+   "n": 1658,
+   "n_green": 1456,
+   "spearman": -0.151,
+   "p": 7.6847087568308e-09,
+   "spearman_streets": -0.218,
+   "n_streets": 174,
+   "days": [
+    "2025-10-24",
+    "2025-10-26"
+   ],
+   "air_mean": 9.8,
+   "cloud_mean": 21,
+   "green_median": 0.291,
+   "green_coolest20": 0.328,
+   "green_warmest20": 0.215,
+   "warmth_greenest20": -0.63,
+   "warmth_leastgreen20": 0.94,
+   "warmth_spread": 8.73,
+   "model": {
+    "per10_green": -0.23,
+    "per10_green_ci": [
+     -0.38,
+     -0.06
+    ],
+    "toward_sun": -0.35,
+    "toward_sun_ci": [
+     -1.03,
+     0.28
+    ],
+    "green_effect_clear": true,
+    "n": 1382,
+    "n_streets": 252
+   }
+  },
+  "Delft": {
+   "label": "small city",
+   "n": 617,
+   "n_green": 515,
+   "spearman": -0.197,
+   "p": 6.471371240777131e-06,
+   "spearman_streets": -0.279,
+   "n_streets": 80,
+   "days": [
+    "2025-10-17",
+    "2025-10-18"
+   ],
+   "air_mean": 13.7,
+   "cloud_mean": 93,
+   "green_median": 0.401,
+   "green_coolest20": 0.464,
+   "green_warmest20": 0.301,
+   "warmth_greenest20": -0.63,
+   "warmth_leastgreen20": 0.94,
+   "warmth_spread": 7.06,
+   "model": {
+    "per10_green": -0.24,
+    "per10_green_ci": [
+     -0.4,
+     -0.05
+    ],
+    "toward_sun": 0.26,
+    "toward_sun_ci": [
+     -0.3,
+     0.88
+    ],
+    "green_effect_clear": true,
+    "n": 503,
+    "n_streets": 119
+   }
+  },
+  "Arnhem": {
+   "label": "big city",
+   "n": 2306,
+   "n_green": 1447,
+   "spearman": -0.103,
+   "p": 8.746521561980569e-05,
+   "spearman_streets": 0.056,
+   "n_streets": 173,
+   "days": [
+    "2025-09-26",
+    "2025-09-27"
+   ],
+   "air_mean": 14.3,
+   "cloud_mean": 98,
+   "green_median": 0.31,
+   "green_coolest20": 0.375,
+   "green_warmest20": 0.234,
+   "warmth_greenest20": -0.47,
+   "warmth_leastgreen20": -0.16,
+   "warmth_spread": 6.27,
+   "model": {
+    "per10_green": -0.06,
+    "per10_green_ci": [
+     -0.18,
+     0.08
+    ],
+    "toward_sun": -0.97,
+    "toward_sun_ci": [
+     -1.42,
+     -0.49
+    ],
+    "green_effect_clear": false,
+    "n": 1364,
+    "n_streets": 301
+   }
+  }
+ },
+ "area_order": [
+  "Middelbeers",
+  "Oirschot",
+  "Delft",
+  "Arnhem"
+ ],
+ "overall": {
+  "spearman": -0.088,
+  "p": 2.9900355977361004e-08,
+  "n": 3998,
+  "spearman_streets": -0.058,
+  "n_streets": 494,
+  "n_frames": 5192,
+  "green_coolest20": 0.308,
+  "green_warmest20": 0.235,
+  "warmth_greenest20": -0.31,
+  "warmth_leastgreen20": 0.47,
+  "warmth_p10": -3.76,
+  "warmth_p90": 3.76,
+  "camera_offset_median": 16.2
+ },
+ "trees": {
+  "spearman": -0.054,
+  "p": 0.0009346254624208684,
+  "n": 3823,
+  "health_warm20": 0.549,
+  "health_cool20": 0.576,
+  "show": false
+ },
+ "ramp_domain": [
+  -5.0,
+  5.0
+ ],
+ "priority_count": 10,
+ "headline_variant": "not_clearly",
+ "headline": "Greener streets were only a little cooler, and only in two of the four places.",
+ "subhead": "In the town and the small city, every extra tenth of green in view came with about a quarter of a degree less warmth. In the big city and the village, once we account for which way the bike faced the sun, green made no clear difference. It was autumn: shade does most of its work in summer.",
+ "measure_note": "Warmth here means how warm everything the thermal camera saw along the street was (walls, trees, cars, pavement), compared with the other streets ridden in the same place during the same hour.",
+ "hook_candidates": [
+  "Oirschot_0451",
+  "Oirschot_1638",
+  "Oirschot_1637",
+  "Oirschot_0649",
+  "Oirschot_1652",
+  "Oirschot_1642",
+  "Middelbeers_0250"
+ ],
+ "hook_frame": "Oirschot_0451",
+ "thermal_domain": [
+  14.0,
+  34.0
+ ],
+ "heat_ramp": [
+  "#1B1F3B",
+  "#6A2C70",
+  "#E1534A",
+  "#F9C74F",
+  "#FFF6D5"
+ ]
+}

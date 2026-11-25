@@ -1,0 +1,19 @@
+[project]
+name = "street-skin-pipeline"
+version = "0.1.0"
+description = "Street Skin data pipeline: green view vs street warmth from the Spectrascapes dataset"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "geopandas>=1.2.0",
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.5",
+    "opencv-python-headless<4.13",
+    "osmnx>=2.2.0",
+    "pandas>=3.1.1",
+    "pillow>=13.0.0",
+    "pyarrow>=26.0.1",
+    "remotezip>=0.12.6",
+    "requests>=2.34.2",
+    "scipy>=1.18.1",
+]

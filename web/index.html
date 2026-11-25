@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0E1116" />
+    <title>Street Skin</title>
+    <meta name="description" content="A bicycle rode through four Dutch places with three cameras. Do greener streets run cooler?" />
+    <link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin />
+  </head>
+  <body>
+    <a class="skip-link" href="#explore-anchor">Skip to the explorable map</a>
+
+    <div id="ribbon" class="ribbon" aria-hidden="true">
+      <div class="ribbon-canvas"></div>
+      <div class="ribbon-labels"></div>
+      <p class="ribbon-caption">Every photo spot, in the order it was ridden. Color: warmth. Height: green.</p>
+      <button class="ribbon-skip chrome" type="button">Skip intro</button>
+    </div>
+
+    <div id="mock-badge" class="mock-badge" hidden>Mock data · not real measurements</div>
+
+    <main id="story" class="scrolly">
+      <div id="stage" class="stage" data-layout="image">
+        <div id="map" class="stage-map" aria-label="Map of the ride" role="region"></div>
+        <div class="stage-dim"></div>
+        <div id="hero-slider" class="stage-image"></div>
+
+        <section class="panel panel-scatter" aria-label="Chart: green in view against warmth">
+          <div id="scatter" class="chart"></div>
+          <div id="scatter-tip" class="tip" hidden></div>
+        </section>
+
+        <section class="panel panel-multiples" aria-label="Four places compared">
+          <div id="multiples" class="multiples"></div>
+        </section>
+
+        <section class="panel panel-trees" aria-label="Plant health on warm and cool streets">
+          <div id="trees" class="trees-chart"></div>
+        </section>
+
+        <section class="panel panel-list" aria-label="Where a tree would help most">
+          <h3 class="panel-title">A tree here would help most</h3>
+          <ol id="priority-list" class="priority-list"></ol>
+        </section>
+
+        <div class="explore-ui">
+          <div class="switcher" role="group" aria-label="Choose a place"></div>
+        </div>
+
+        <aside id="detail" class="detail" hidden aria-label="Photo spot">
+          <button class="detail-close" type="button" aria-label="Close">×</button>
+          <div class="detail-slider"></div>
+          <dl class="detail-stats"></dl>
+        </aside>
+
+        <div class="legend" aria-hidden="true">
+          <span class="legend-label">Compared with other streets that hour</span>
+          <span class="legend-bar"></span>
+          <span class="legend-ticks"><span class="lo"></span><span class="hi"></span></span>
+        </div>
+      </div>
+
+      <div id="steps" class="steps"></div>
+    </main>
+
+    <article id="how" class="how"></article>
+
+    <noscript>This story needs JavaScript to draw its maps and charts.</noscript>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
