@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Dev only: headless screenshots of key chapters at desktop and phone size.
-// Usage: node scripts/screenshots.mjs [baseUrl]   (default http://localhost:4317/street-skin/)
+// Usage: node scripts/screenshots.mjs [baseUrl]   (default http://localhost:4317/heat-ride/)
 // Needs a running `vite preview --port 4317`. Uses an already installed Playwright
 // Chromium headless shell (set CHROME_PATH to override); it never downloads browsers.
 
@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(here, "../screenshots");
 mkdirSync(OUT, { recursive: true });
-const BASE = process.argv[2] || `http://localhost:${process.env.PORT || 4317}/street-skin/`;
+const BASE = process.argv[2] || `http://localhost:${process.env.PORT || 4317}/heat-ride/`;
 
 function findChrome() {
   if (process.env.CHROME_PATH) return process.env.CHROME_PATH;

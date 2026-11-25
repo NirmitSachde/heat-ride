@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Street Skin · MOCK data generator.
+// Heat Ride · MOCK data generator.
 // Writes web/public/data/*.json, segments.geojson and web/public/frames/** in the exact
 // shape of docs/DATA_CONTRACT.md, so the front end can be built before the real export lands.
 // Everything here is synthetic. story.json carries "mock": true and the app shows a badge.

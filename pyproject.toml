@@ -1,7 +1,7 @@
 [project]
-name = "street-skin-pipeline"
+name = "heat-ride-pipeline"
 version = "0.1.0"
-description = "Street Skin data pipeline: green view vs street warmth from the Spectrascapes dataset"
+description = "Heat Ride data pipeline: green view vs street warmth from the Spectrascapes dataset"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

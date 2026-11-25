@@ -22,7 +22,7 @@ fe = pd.read_parquet(OUT / "frame_edges.parquet")
 # Recompute thermal numbers from the stored originals so every row uses the same code.
 # The thermal camera is aimed higher and narrower than the colour cameras: by eye, it mostly sees
 # facades, trees, cars and sky, with little pavement. So we measure the warmth of everything
-# along the street that is not sky ("the street's skin"), not the road surface alone.
+# along the street that is not sky, not the road surface alone.
 ROWS = np.arange(120, dtype=np.float32)[:, None] * np.ones((1, 160), dtype=np.float32)
 
 

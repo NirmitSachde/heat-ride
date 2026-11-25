@@ -1,4 +1,4 @@
-# Street Skin: one-page write-up
+# Heat Ride: one-page write-up
 
 ## Question
 On the same day, are greener streets cooler at street level, and does that hold from a village to a big city?
@@ -10,7 +10,7 @@ On the same day, are greener streets cooler at street level, and does that hold 
 
 ## Method
 - **Green view.** For each near-infrared photo, the share of pixels with NDVI above 0.3 (living plants reflect near-infrared strongly). Checked by eye on overlays. Photos whose near-infrared exposure was too dark (23%, mostly Arnhem's first day) shifted the camera's colour balance so plants no longer separated from walls; they were excluded from every plant measure.
-- **Warmth.** The thermal camera turned out to be aimed higher and narrower than the colour cameras: by eye it mostly sees facades, trees and cars, little pavement. So the measure is the median warmth of everything in the thermal view that is not sky (sky found per photo with a two-class split), the street's "skin". Its absolute values sit about 16 C above the air temperature even under full cloud, which real surfaces cannot do, so absolute numbers are not used. Each spot is compared with the other spots ridden in the same place within the same hour (relative warmth, in camera degrees; one step of the 8-bit image is 0.16 C).
+- **Warmth.** The thermal camera turned out to be aimed higher and narrower than the colour cameras: by eye it mostly sees facades, trees and cars, little pavement. So the measure is the median warmth of everything in the thermal view that is not sky (sky found per photo with a two-class split). Its absolute values sit about 16 C above the air temperature even under full cloud, which real surfaces cannot do, so absolute numbers are not used. Each spot is compared with the other spots ridden in the same place within the same hour (relative warmth, in camera degrees; one step of the 8-bit image is 0.16 C).
 - **Streets.** Each photo snapped to its nearest OpenStreetMap bike-network edge (median distance 2 m).
 - **Controls.** Looking at the warmest photos showed many were taken riding into the low autumn sun. So the test is a regression of relative warmth on green view, riding direction relative to the sun (computed from GPS heading and solar position) and open sky, per place. 95% intervals come from a bootstrap that resamples whole streets, because photos on one street are not independent.
 

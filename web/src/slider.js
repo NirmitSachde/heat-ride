@@ -20,7 +20,7 @@ const SAY = [
 const GAP = 0.08; // smallest share of the width the middle view keeps during a drag
 const KEY_STEP = 0.05;
 const PAGE_STEP = 0.2;
-const HINT_KEY = "street-skin:slider-used";
+const HINT_KEY = "heat-ride:slider-used";
 const COARSE = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
 
 let hintDone = false;

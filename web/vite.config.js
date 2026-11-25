@@ -1,7 +1,7 @@
 import { defineConfig, defaultClientConditions } from "vite";
 
 export default defineConfig({
-  base: "/street-skin/",
+  base: "/heat-ride/",
   // deck.gl / luma.gl ship a WebGL-only build; we never use WebGPU, so skip that code.
   resolve: { conditions: ["visgl:webgl-only", ...defaultClientConditions] },
   build: {

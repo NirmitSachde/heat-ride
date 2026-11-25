@@ -1,11 +1,11 @@
-# Street Skin
+# Heat Ride
 ### What a bicycle sees beyond the visible
 
 A scroll story that rides through four Dutch places, from a village to a city, with three cameras (normal colour, near-infrared, thermal), and asks one question: **do greener streets run cooler?**
 
-**Live:** not published yet (will be https://nirmitsachde.github.io/street-skin/) · **Video (60 s):** [video/street-skin-60s.mp4](video/street-skin-60s.mp4) · **Write-up:** [docs/WRITEUP.md](docs/WRITEUP.md)
+**Live:** not published yet (will be https://nirmitsachde.github.io/heat-ride/) · **Video (60 s):** [video/heat-ride-60s.mp4](video/heat-ride-60s.mp4) · **Write-up:** [docs/WRITEUP.md](docs/WRITEUP.md)
 
-![Street Skin](docs/screenshots/hero.png)
+![Heat Ride](docs/screenshots/hero.png)
 
 ## The finding
 Greener streets were only a little cooler, and only in two of the four places. In the town (Oirschot) and the small city (Delft), every 10 more percent of the view that is green came with about a quarter of a degree cooler surfaces. In the big city (Arnhem) and the village (Middelbeers), once the bike's direction relative to the sun is accounted for, green made no clear difference. It was October: shade does most of its work in summer. The story ends with six warm, bare street stretches in those two places where a tree would likely help most. The four places cannot be ranked against each other: each was ridden on different days with a camera whose absolute readings drift.
@@ -21,7 +21,7 @@ cd web && npm ci && npm run dev
 
 ## Honest notes (also on the page)
 - The thermal camera reads about 16 C above the air even under full cloud, so absolute temperatures are not used. Warmth is relative: each spot against the other streets ridden in the same place in the same hour.
-- The thermal camera mostly sees facades, trees and cars, not the road itself, so the measure is the warmth of the street's surfaces ("skin"), not road temperature.
+- The thermal camera mostly sees facades, trees and cars, not the road itself, so the measure is the warmth of the street's surfaces, not road temperature.
 - 23% of near-infrared photos were too dark to measure plants (mostly Arnhem's first day) and are left out of plant measures.
 - Autumn, around midday, one or two days per place. Findings are per street stretch, never per person or house. Only ~230 normal-colour photos are published, small, with faces and plates blurred.
 

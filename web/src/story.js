@@ -161,7 +161,7 @@ export function buildContext(story, frames, rideArea = "Arnhem") {
 // Each entry: { kicker?, title?, body } where any field may be a string or { cooler, not_clearly }.
 export const COPY = {
   "hook.intro": {
-    kicker: "Street Skin",
+    kicker: "Heat Ride",
     title: "What a bicycle sees beyond the visible",
     body: "In {places.season}, a bicycle rode through {places.count|word} Dutch places carrying three cameras. One of them saw heat.",
   },
@@ -307,7 +307,7 @@ export function renderHow(ctx) {
       <li><b>The line in the charts</b> follows the middle (median) warmth for each slice of green, only where a slice holds enough photos.</li>
       <li><b>The sentence for each place</b> comes from a model fitted separately for each place: warmth explained by green in view, by riding toward the sun and by open sky. It gives the change in warmth for every 10 more percent of the view that is green. The likely range comes from resampling whole streets many times (a 95% bootstrap interval). If that range includes zero, we call it "no clear difference".</li>
       <li><b>Where a tree would likely help:</b> named street stretches with 4 or more photos, at least 1.5°C warmer than their hour, with less green than the place's median and below 25%, only in places where green had a clear cooling effect. They are ranked by warmth and bareness together, within each place.</li>
-      <li><b>Code and data:</b> <a href="https://github.com/NirmitSachde/street-skin" rel="noopener">github.com/NirmitSachde/street-skin</a></li>
+      <li><b>Code and data:</b> <a href="https://github.com/NirmitSachde/heat-ride" rel="noopener">github.com/NirmitSachde/heat-ride</a></li>
     </ul>
 
     <h3>Limits</h3>

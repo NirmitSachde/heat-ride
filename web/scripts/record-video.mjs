@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(here, "../../video");
-const BASE = process.argv[2] || "http://localhost:4317/street-skin/";
+const BASE = process.argv[2] || "http://localhost:4317/heat-ride/";
 const SECS = Number(process.argv[3] || 56);
 
 function findChrome() {
