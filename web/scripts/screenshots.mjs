@@ -4,7 +4,9 @@
 // Needs a running `vite preview --port 4317`. Uses an already installed Playwright
 // Chromium headless shell (set CHROME_PATH to override); it never downloads browsers.
 
-import { chromium } from "playwright-core";
+import { chromium, webkit, firefox } from "playwright-core";
+// BROWSER=chromium (default) | webkit | firefox. WebKit/Firefox use Playwright's own builds (npx playwright-core install webkit firefox).
+const BROWSER = process.env.BROWSER || "chromium";
 import { existsSync, readdirSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
@@ -52,20 +54,25 @@ const SHOTS = [
   { name: "11-how", sel: "#how", how: true },
 ];
 
-const browser = await chromium.launch({
-  executablePath: findChrome(),
-  args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"],
-});
+const browser = BROWSER === "webkit" ? await webkit.launch()
+  : BROWSER === "firefox" ? await firefox.launch()
+  : await chromium.launch({
+    executablePath: findChrome(),
+    args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"],
+  });
+const TAG = BROWSER === "chromium" ? "" : `${BROWSER}-`;
 const problems = [];
 for (const vp of VIEWPORTS.filter((v) => VPS.includes(v.name))) {
-  const ctx = await browser.newContext({ ...vp });
+  const { name: _n, ...opts } = vp;
+  if (BROWSER === "firefox") delete opts.isMobile; // not supported by Firefox
+  const ctx = await browser.newContext(opts);
   const page = await ctx.newPage();
   page.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") problems.push(`[${vp.name}] console.${m.type()}: ${m.text()}`); });
   page.on("pageerror", (e) => problems.push(`[${vp.name}] pageerror: ${e.message}`));
   page.on("requestfailed", (r) => problems.push(`[${vp.name}] requestfailed: ${r.url()} ${r.failure()?.errorText}`));
   await page.goto(BASE + "?debug=1", { waitUntil: "load" });
   await page.waitForTimeout(1200);
-  if (!ONLY) await page.screenshot({ path: path.join(OUT, `${vp.name}-ribbon.png`) });
+  if (!ONLY) await page.screenshot({ path: path.join(OUT, `${TAG}${vp.name}-ribbon.png`) });
   await page.waitForFunction(() => !document.getElementById("ribbon"), null, { timeout: 60000 });
   await page.waitForTimeout(400);
 
@@ -91,7 +98,7 @@ for (const vp of VIEWPORTS.filter((v) => VPS.includes(v.name))) {
       await page.evaluate(() => window.__ss && window.__ss.openHero());
       await page.waitForTimeout(1500);
     }
-    await page.screenshot({ path: path.join(OUT, `${vp.name}-${s.name}.png`), timeout: 90000 });
+    await page.screenshot({ path: path.join(OUT, `${TAG}${vp.name}-${s.name}.png`), timeout: 90000 });
   }
   await ctx.close();
 }

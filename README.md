@@ -25,6 +25,9 @@ cd web && npm ci && npm run dev
 - 23% of near-infrared photos were too dark to measure plants (mostly Arnhem's first day) and are left out of plant measures.
 - Autumn, around midday, one or two days per place. Findings are per street stretch, never per person or house. Only ~230 normal-colour photos are published, small, with faces and plates blurred.
 
+## Browser check
+Checked headless in Chromium, WebKit (Safari's engine) and Firefox at 1440x900 and 375x812 (`BROWSER=webkit|firefox npm run shots`): no console errors in any of them. Not yet checked on a physical phone.
+
 ## Usability test
 See [docs/USABILITY.md](docs/USABILITY.md).
 
