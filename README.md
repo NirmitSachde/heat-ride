@@ -3,7 +3,7 @@
 
 A scroll story that rides through four Dutch places, from a village to a city, with three cameras (normal colour, near-infrared, thermal), and asks one question: **do greener streets run cooler?**
 
-**Live:** https://nirmitsachde.github.io/street-skin/ · **Video (60 s):** [video/street-skin-60s.mp4](video/street-skin-60s.mp4) · **Write-up:** [docs/WRITEUP.md](docs/WRITEUP.md)
+**Live:** not published yet (will be https://nirmitsachde.github.io/street-skin/) · **Video (60 s):** [video/street-skin-60s.mp4](video/street-skin-60s.mp4) · **Write-up:** [docs/WRITEUP.md](docs/WRITEUP.md)
 
 ![Street Skin](docs/screenshots/hero.png)
 
